@@ -1,0 +1,40 @@
+name: booking-app-service
+
+services:
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: booking_postgres
+    environment:
+      POSTGRES_DB: booking_db
+      POSTGRES_USER: booking_user
+      POSTGRES_PASSWORD: booking_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - booking-network
+
+  booking-api:
+    build: .
+    image: booking-api:1.0.0
+    container_name: booking-api-container
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/booking_db
+      SPRING_DATASOURCE_USERNAME: booking_user
+      SPRING_DATASOURCE_PASSWORD: booking_password
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    depends_on:
+      - postgres-db
+    networks:
+      - booking-network
+
+networks:
+  booking-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
