@@ -1,14 +1,14 @@
 -- 1. Password: "password123"
 INSERT INTO users (id, name, email, password, role, created_at)
-VALUES (1, 'Billy Jerson', 'billy@example.com', '$2a$10$e8WkWmOD0D/T/jYkE4n7gOQk8S8nF.1Ww0W5p2l5wE6eX/2aD7mOW', 'ROLE_CLIENT', NOW())
+VALUES (1, 'Billy Jerson', 'billy@example.com', '$2a$12$O17kdLYuYYCKRSCYufeT6uXv0Y9b6c9nzperkQlMaAMOtY5JY2vyq', 'ROLE_CLIENT', NOW())
     ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO users (id, name, email, password, role, created_at)
-VALUES (2, 'Dr. Miguel Torres', 'proveedor@example.com', '$2a$10$e8WkWmOD0D/T/jYkE4n7gOQk8S8nF.1Ww0W5p2l5wE6eX/2aD7mOW', 'ROLE_PROVIDER', NOW())
+VALUES (2, 'Dr. Miguel Torres', 'proveedor@example.com', '$2a$12$O17kdLYuYYCKRSCYufeT6uXv0Y9b6c9nzperkQlMaAMOtY5JY2vyq', 'ROLE_PROVIDER', NOW())
     ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO users (id, name, email, password, role, created_at)
-VALUES (3, 'Admin Sistema', 'admin@example.com', '$2a$10$e8WkWmOD0D/T/jYkE4n7gOQk8S8nF.1Ww0W5p2l5wE6eX/2aD7mOW', 'ROLE_ADMIN', NOW())
+VALUES (3, 'Admin Sistema', 'admin@example.com', '$2a$12$O17kdLYuYYCKRSCYufeT6uXv0Y9b6c9nzperkQlMaAMOtY5JY2vyq', 'ROLE_ADMIN', NOW())
     ON CONFLICT (id) DO NOTHING;
 
 -- 2. Insert services for provider (ID: 2)

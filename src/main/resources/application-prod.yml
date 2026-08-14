@@ -7,16 +7,12 @@ spring:
 
   jpa:
     show-sql: false
-    defer-datasource-initialization: false
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     open-in-view: false
 
   flyway:
     enabled: true
-    baseline-on-migrate: true
-    baseline-version: 0
-    schemas: public
     locations: classpath:db/migration
 
 jwt:
