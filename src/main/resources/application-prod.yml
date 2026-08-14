@@ -7,13 +7,14 @@ spring:
 
   jpa:
     show-sql: false
-    defer-datasource-initialization: false
     hibernate:
       ddl-auto: none
 
   flyway:
     enabled: true
     baseline-on-migrate: true
+    baseline-version: 0
+    schemas: public
     locations: classpath:db/migration
 
 jwt:
@@ -24,3 +25,4 @@ logging:
   level:
     root: WARN
     com.reservations.booking: INFO
+    org.flywaydb: DEBUG
