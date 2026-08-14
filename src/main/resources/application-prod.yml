@@ -7,8 +7,10 @@ spring:
 
   jpa:
     show-sql: false
+    defer-datasource-initialization: false
     hibernate:
       ddl-auto: none
+    open-in-view: false
 
   flyway:
     enabled: true
