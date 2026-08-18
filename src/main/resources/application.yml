@@ -6,6 +6,25 @@ spring:
     time-zone: UTC
     date-format: yyyy-MM-dd HH:mm:ss
 
+  mail:
+    host: smtp.resend.com
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  rabbitmq:
+    addresses: ${CLOUDAMQP_URL:amqps://mbdfjugg:c3fPzJ7GL4IHFsh9lx4KRBZhPpN6OT3J@leopard.lmq.cloudamqp.com/mbdfjugg}
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 3000ms
+          max-attempts: 5
+
 springdoc:
   api-docs:
     path: /v3/api-docs

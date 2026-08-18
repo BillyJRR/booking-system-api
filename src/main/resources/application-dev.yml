@@ -17,6 +17,13 @@ spring:
     enabled: true
     locations: classpath:db/migration
 
+  mail:
+    username: ${MAIL_USERNAME:resend}
+    password: ${MAIL_PASSWORD:re_ix15t8de_595Jw3MoeihfsxtFemrBQbqv}
+
+  rabbitmq:
+    addresses: ${CLOUDAMQP_URL:amqps://mbdfjugg:c3fPzJ7GL4IHFsh9lx4KRBZhPpN6OT3J@leopard.lmq.cloudamqp.com/mbdfjugg}
+
 jwt:
   secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
   expiration: 86400000

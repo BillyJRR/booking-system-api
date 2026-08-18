@@ -1,6 +1,6 @@
 -- 1. Password: "password123"
 INSERT INTO users (id, name, email, password, role, created_at)
-VALUES (1, 'Billy Jerson', 'billy@example.com', '$2a$12$O17kdLYuYYCKRSCYufeT6uXv0Y9b6c9nzperkQlMaAMOtY5JY2vyq', 'ROLE_CLIENT', NOW())
+VALUES (1, 'Billy Jerson', 'bjersonrr@gmail.com', '$2a$12$O17kdLYuYYCKRSCYufeT6uXv0Y9b6c9nzperkQlMaAMOtY5JY2vyq', 'ROLE_CLIENT', NOW())
     ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO users (id, name, email, password, role, created_at)

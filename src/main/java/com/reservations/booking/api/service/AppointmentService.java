@@ -2,18 +2,15 @@ package com.reservations.booking.api.service;
 
 import com.reservations.booking.api.dto.request.AppointmentRequestDto;
 import com.reservations.booking.api.dto.response.AppointmentResponseDto;
+import com.reservations.booking.api.event.OutboxCreatedEvent;
 import com.reservations.booking.api.exception.BadRequestException;
 import com.reservations.booking.api.exception.ResourceNotFoundException;
-import com.reservations.booking.api.model.Appointment;
-import com.reservations.booking.api.model.Availability;
-import com.reservations.booking.api.model.ServiceEntity;
-import com.reservations.booking.api.model.User;
+import com.reservations.booking.api.model.*;
 import com.reservations.booking.api.model.enums.AppointmentStatus;
-import com.reservations.booking.api.repository.AppointmentRepository;
-import com.reservations.booking.api.repository.AvailabilityRepository;
-import com.reservations.booking.api.repository.ServiceRepository;
-import com.reservations.booking.api.repository.UserRepository;
+import com.reservations.booking.api.model.enums.OutboxStatus;
+import com.reservations.booking.api.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -33,6 +30,8 @@ public class AppointmentService {
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
     private final AvailabilityRepository availabilityRepository;
+    private final OutboxRepository outboxRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public AppointmentResponseDto createAppointment(AppointmentRequestDto dto) {
@@ -47,6 +46,10 @@ public class AppointmentService {
 
         LocalDateTime startDateTime = dto.getStartDateTime();
         LocalDateTime endDateTime = startDateTime.plusMinutes(service.getDurationMinutes());
+
+        if (startDateTime.isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("No se pueden agendar citas en fechas u horas pasadas");
+        }
 
         validateProviderAvailability(provider.getId(), startDateTime, endDateTime);
 
@@ -70,6 +73,19 @@ public class AppointmentService {
                 .build();
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
+
+        OutboxEmail outboxEmail = OutboxEmail.builder()
+                .recipient(client.getEmail())
+                .subject("Confirmación de Reserva")
+                .content("Tu cita ha sido agendada para: " + startDateTime)
+                .status(OutboxStatus.PENDING)
+                .retryCount(0)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        outboxRepository.save(outboxEmail);
+
+        eventPublisher.publishEvent(new OutboxCreatedEvent(outboxEmail.getId()));
 
         return mapToResponseDto(savedAppointment);
     }
@@ -98,6 +114,18 @@ public class AppointmentService {
     public void cancelAppointment(Long appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada con ID: " + appointmentId));
+
+        String userEmail = getAuthenticatedUserEmail();
+        User currentUser = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        boolean isClient = appointment.getClient().getEmail().equals(userEmail);
+        boolean isProvider = appointment.getService().getProvider().getEmail().equals(userEmail);
+        boolean isAdmin = currentUser.getRole().name().equals("ROLE_ADMIN");
+
+        if (!isClient && !isProvider && !isAdmin) {
+            throw new BadRequestException("No tienes permisos para cancelar esta cita");
+        }
 
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);

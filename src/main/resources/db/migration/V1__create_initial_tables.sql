@@ -37,3 +37,18 @@ CREATE TABLE appointments (
                               CONSTRAINT fk_appointment_client FOREIGN KEY (client_id) REFERENCES users(id),
                               CONSTRAINT fk_appointment_service FOREIGN KEY (service_id) REFERENCES services(id)
 );
+
+CREATE TABLE outbox_emails (
+                               id BIGSERIAL PRIMARY KEY,
+                               recipient VARCHAR(255) NOT NULL,
+                               subject VARCHAR(255) NOT NULL,
+                               content TEXT NOT NULL,
+                               status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+                               retry_count INT NOT NULL DEFAULT 0,
+                               created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                               processed_at TIMESTAMP WITHOUT TIME ZONE,
+                               error_message TEXT
+);
+
+CREATE INDEX idx_outbox_emails_status ON outbox_emails(status);
+CREATE INDEX idx_outbox_emails_created_at ON outbox_emails(created_at);
