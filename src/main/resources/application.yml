@@ -6,20 +6,6 @@ spring:
     time-zone: UTC
     date-format: yyyy-MM-dd HH:mm:ss
 
-  mail:
-    host: smtp.resend.com
-    port: 465
-    properties:
-      mail:
-        smtp:
-          auth: true
-          ssl:
-            enable: true
-          socketFactory:
-            port: 465
-            class: javax.net.ssl.SSLSocketFactory
-            fallback: false
-
   rabbitmq:
     addresses: ${CLOUDAMQP_URL:amqps://mbdfjugg:c3fPzJ7GL4IHFsh9lx4KRBZhPpN6OT3J@leopard.lmq.cloudamqp.com/mbdfjugg}
     listener:
@@ -28,6 +14,9 @@ spring:
           enabled: true
           initial-interval: 3000ms
           max-attempts: 5
+
+resend:
+  api-key: ${RESEND_API_KEY:re_ix15t8de_595Jw3MoeihfsxtFemrBQbqv}
 
 springdoc:
   api-docs:
