@@ -1,4 +1,4 @@
-package com.reservations.booking.api.mq.listener;
+package com.reservations.booking.api.mp.listener;
 
 import com.reservations.booking.api.config.RabbitMQConfig;
 import com.reservations.booking.api.model.OutboxEmail;
@@ -38,6 +38,7 @@ public class EmailQueueListener {
             log.error("Error enviando correo con Outbox ID: {}", outboxId, e);
 
             email.setRetryCount(email.getRetryCount() + 1);
+            email.setErrorMessage(e.getMessage());
             if (email.getRetryCount() >= 3) {
                 email.setStatus(OutboxStatus.FAILED);
             }

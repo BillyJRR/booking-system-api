@@ -32,4 +32,7 @@ public class OutboxEmail {
 
     private LocalDateTime createdAt;
     private LocalDateTime processedAt;
+
+    @Column(columnDefinition = "TEXT")
+    private String errorMessage;
 }
