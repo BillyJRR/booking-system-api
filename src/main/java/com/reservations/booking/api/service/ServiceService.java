@@ -1,11 +1,9 @@
 package com.reservations.booking.api.service;
 
 import com.reservations.booking.api.dto.request.ServiceRequestDto;
-import com.reservations.booking.api.dto.response.AvailabilityResponseDto;
 import com.reservations.booking.api.dto.response.ServiceResponseDto;
 import com.reservations.booking.api.exception.BadRequestException;
 import com.reservations.booking.api.exception.ResourceNotFoundException;
-import com.reservations.booking.api.model.Availability;
 import com.reservations.booking.api.model.ServiceEntity;
 import com.reservations.booking.api.model.User;
 import com.reservations.booking.api.repository.ServiceRepository;

@@ -3,15 +3,9 @@ package com.reservations.booking.api.service;
 import com.reservations.booking.api.dto.request.AppointmentRequestDto;
 import com.reservations.booking.api.dto.response.AppointmentResponseDto;
 import com.reservations.booking.api.exception.BadRequestException;
-import com.reservations.booking.api.model.Appointment;
-import com.reservations.booking.api.model.Availability;
-import com.reservations.booking.api.model.ServiceEntity;
-import com.reservations.booking.api.model.User;
+import com.reservations.booking.api.model.*;
 import com.reservations.booking.api.model.enums.AppointmentStatus;
-import com.reservations.booking.api.repository.AppointmentRepository;
-import com.reservations.booking.api.repository.AvailabilityRepository;
-import com.reservations.booking.api.repository.ServiceRepository;
-import com.reservations.booking.api.repository.UserRepository;
+import com.reservations.booking.api.repository.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,14 +15,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -47,6 +44,12 @@ class AppointmentServiceTest {
 
     @Mock
     private AvailabilityRepository availabilityRepository;
+
+    @Mock
+    private OutboxRepository outboxRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @Mock
     private SecurityContext securityContext;
@@ -99,7 +102,7 @@ class AppointmentServiceTest {
     @Test
     @DisplayName("Crear cita exitosamente cuando hay disponibilidad y no exista traslapes")
     void createAppointment_Success() {
-        LocalDateTime startDateTime = LocalDateTime.of(2026, 8, 10, 10, 0);
+        Instant startDateTime = Instant.parse("2026-08-10T15:00:00Z");
         AppointmentRequestDto request = new AppointmentRequestDto(1L, startDateTime);
 
         Mockito.when(authentication.getName()).thenReturn("billy@example.com");
@@ -114,7 +117,7 @@ class AppointmentServiceTest {
         Appointment savedAppointment = Appointment.builder()
                 .id(10L)
                 .startDateTime(startDateTime)
-                .endDateTime(startDateTime.plusMinutes(60))
+                .endDateTime(startDateTime.plus(60, ChronoUnit.MINUTES))
                 .status(AppointmentStatus.PENDING)
                 .client(client)
                 .service(serviceEntity)
@@ -128,20 +131,23 @@ class AppointmentServiceTest {
         Assertions.assertEquals(10L, response.getId());
         Assertions.assertEquals("Consulta Especializada", response.getServiceName());
         Assertions.assertEquals(AppointmentStatus.PENDING, response.getStatus());
+
         Mockito.verify(appointmentRepository, Mockito.times(1)).save(Mockito.any(Appointment.class));
+        Mockito.verify(outboxRepository, Mockito.times(1)).save(Mockito.any(OutboxEmail.class));
+        Mockito.verify(eventPublisher, Mockito.times(1)).publishEvent(Mockito.any());
     }
 
     @Test
     @DisplayName("Lanzar excepción al intentar reservar cuando el horario se traslapa con otra cita")
     void createAppointment_ThrowsException_WhenOverlappingExists() {
-        LocalDateTime startDateTime = LocalDateTime.of(2026, 8, 10, 10, 0);
+        Instant startDateTime = Instant.parse("2026-08-10T15:00:00Z");
         AppointmentRequestDto request = new AppointmentRequestDto(1L, startDateTime);
 
-        Mockito.when(authentication.getName()).thenReturn("billy@example.com");
+        Mockito.when(authentication.getName()).thenReturn("bjersonrr@gmail.com");
         Mockito.when(authentication.isAuthenticated()).thenReturn(true);
-        Mockito.when(userRepository.findByEmail("billy@example.com")).thenReturn(Optional.of(client));
+        Mockito.when(userRepository.findByEmail("bjersonrr@gmail.com")).thenReturn(Optional.of(client));
         Mockito.when(serviceRepository.findById(1L)).thenReturn(Optional.of(serviceEntity));
-        Mockito.when(availabilityRepository.findByProviderIdAndDayOfWeek(2L, DayOfWeek.MONDAY))
+        Mockito.when(availabilityRepository.findByProviderIdAndDayOfWeek(Mockito.eq(2L), Mockito.any()))
                 .thenReturn(List.of(availability));
 
         Mockito.when(appointmentRepository.existsOverlappingAppointment(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
@@ -154,5 +160,6 @@ class AppointmentServiceTest {
 
         Assertions.assertTrue(exception.getMessage().contains("ya tiene una cita reservada"));
         Mockito.verify(appointmentRepository, Mockito.never()).save(Mockito.any());
+        Mockito.verify(outboxRepository, Mockito.never()).save(Mockito.any());
     }
 }

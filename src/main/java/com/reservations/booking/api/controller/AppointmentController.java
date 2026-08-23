@@ -7,6 +7,10 @@ import com.reservations.booking.api.model.enums.AppointmentStatus;
 import com.reservations.booking.api.service.AppointmentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/appointments")
 @RequiredArgsConstructor
@@ -23,8 +28,17 @@ public class AppointmentController {
 
     @GetMapping("/my-appointments")
     @PreAuthorize("hasAnyRole('CLIENT', 'ADMIN')")
-    public ResponseEntity<ApiResponse<List<AppointmentResponseDto>>> getAppointments() {
-        List<AppointmentResponseDto> appointments = appointmentService.getAppointmentsForCurrentUser();
+    public ResponseEntity<ApiResponse<Page<AppointmentResponseDto>>> getAppointments(
+            @RequestParam(required = false) AppointmentStatus status,
+            @RequestParam(required = false) String search,
+            @PageableDefault(size = 10, sort = "startDateTime", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<AppointmentResponseDto> appointments = appointmentService.getAppointmentsForCurrentUser(
+                status,
+                search,
+                pageable
+        );
+
         return ResponseEntity.ok(
                 ApiResponse.success(HttpStatus.OK.value(), "Citas recuperadas con éxito", appointments)
         );

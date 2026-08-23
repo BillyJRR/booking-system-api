@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -18,5 +18,5 @@ public class AppointmentRequestDto {
 
     @NotNull(message = "La fecha y hora de inicio son obligatorias")
     @Future(message = "La reserva debe realizarse para una fecha y hora futura")
-    private LocalDateTime startDateTime;
+    private Instant startDateTime;
 }

@@ -31,6 +31,10 @@ services:
       - postgres-db
     networks:
       - booking-network
+    develop:
+      watch:
+        - action: rebuild
+          path: ./src
 
 networks:
   booking-network:

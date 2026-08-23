@@ -4,7 +4,7 @@ import com.reservations.booking.api.model.enums.AppointmentStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 public class AppointmentResponseDto {
 
     private Long id;
-    private LocalDateTime startDateTime;
-    private LocalDateTime endDateTime;
+    private Instant startDateTime;
+    private Instant endDateTime;
     private AppointmentStatus status;
     private String serviceName;
     private BigDecimal servicePrice;

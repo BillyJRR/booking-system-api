@@ -3,8 +3,8 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
   jackson:
-    time-zone: UTC
-    date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      INDENT_OUTPUT: true
 
   rabbitmq:
     addresses: ${CLOUDAMQP_URL:amqps://mbdfjugg:c3fPzJ7GL4IHFsh9lx4KRBZhPpN6OT3J@leopard.lmq.cloudamqp.com/mbdfjugg}

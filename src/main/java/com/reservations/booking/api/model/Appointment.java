@@ -4,7 +4,7 @@ import com.reservations.booking.api.model.enums.AppointmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "appointments")
@@ -20,10 +20,10 @@ public class Appointment {
     private Long id;
 
     @Column(name = "start_date_time", nullable = false)
-    private LocalDateTime startDateTime;
+    private Instant startDateTime;
 
     @Column(name = "end_date_time", nullable = false)
-    private LocalDateTime endDateTime;
+    private Instant endDateTime;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -38,11 +38,11 @@ public class Appointment {
     private ServiceEntity service;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = Instant.now();
         if (this.status == null) {
             this.status = AppointmentStatus.PENDING;
         }

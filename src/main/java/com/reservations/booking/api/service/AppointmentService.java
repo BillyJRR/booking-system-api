@@ -10,20 +10,24 @@ import com.reservations.booking.api.model.enums.AppointmentStatus;
 import com.reservations.booking.api.model.enums.OutboxStatus;
 import com.reservations.booking.api.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
@@ -44,13 +48,13 @@ public class AppointmentService {
 
         User provider = service.getProvider();
 
-        LocalDateTime startDateTime = dto.getStartDateTime();
-        LocalDateTime endDateTime = startDateTime.plusMinutes(service.getDurationMinutes());
+        Instant startDateTime = dto.getStartDateTime();
+        Instant endDateTime = startDateTime.plus(service.getDurationMinutes(), ChronoUnit.MINUTES);
 
-        if (startDateTime.isBefore(LocalDateTime.now())) {
+        if (startDateTime.isBefore(Instant.now())) {
             throw new BadRequestException("No se pueden agendar citas en fechas u horas pasadas");
         }
-
+        log.info("fecha: {}", startDateTime);
         validateProviderAvailability(provider.getId(), startDateTime, endDateTime);
 
         boolean isOverlapping = appointmentRepository.existsOverlappingAppointment(
@@ -74,13 +78,19 @@ public class AppointmentService {
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
+        ZoneId zoneId = ZoneId.of("America/Lima");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a")
+                .withZone(zoneId);
+
+        String formattedDate = formatter.format(startDateTime);
+
         OutboxEmail outboxEmail = OutboxEmail.builder()
                 .recipient(client.getEmail())
                 .subject("Confirmación de Reserva")
-                .content("Tu cita ha sido agendada para: " + startDateTime)
+                .content("Tu cita ha sido agendada para la fecha: " + formattedDate)
                 .status(OutboxStatus.PENDING)
                 .retryCount(0)
-                .createdAt(LocalDateTime.now())
+                .createdAt(Instant.now())
                 .build();
 
         outboxRepository.save(outboxEmail);
@@ -91,15 +101,23 @@ public class AppointmentService {
     }
 
     @Transactional(readOnly = true)
-    public List<AppointmentResponseDto> getAppointmentsForCurrentUser() {
+    public Page<AppointmentResponseDto> getAppointmentsForCurrentUser(
+            AppointmentStatus status,
+            String search,
+            Pageable pageable
+    ) {
         String userEmail = getAuthenticatedUserEmail();
         User client = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
-        return appointmentRepository.findByClientId(client.getId())
-                .stream()
-                .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+        Page<Appointment> appointmentPage = appointmentRepository.findByClientIdWithFilters(
+                client.getId(),
+                status,
+                search,
+                pageable
+        );
+
+        return appointmentPage.map(this::mapToResponseDto);
     }
 
     @Transactional(readOnly = true)
@@ -156,10 +174,14 @@ public class AppointmentService {
         return mapToResponseDto(updatedAppointment);
     }
 
-    public void validateProviderAvailability(Long providerId, LocalDateTime start, LocalDateTime end) {
-        DayOfWeek dayOfWeek = start.getDayOfWeek();
-        LocalTime startTime = start.toLocalTime();
-        LocalTime endTime = end.toLocalTime();
+    public void validateProviderAvailability(Long providerId, Instant startInstant, Instant endInstant) {
+        ZoneId providerZone = ZoneId.of("America/Lima");
+        ZonedDateTime startZoned = startInstant.atZone(providerZone);
+        ZonedDateTime endZoned = endInstant.atZone(providerZone);
+
+        DayOfWeek dayOfWeek = startZoned.getDayOfWeek();
+        LocalTime startTime = startZoned.toLocalTime();
+        LocalTime endTime = endZoned.toLocalTime();
 
         List<Availability> availabilities = availabilityRepository.findByProviderIdAndDayOfWeek(providerId,dayOfWeek);
 

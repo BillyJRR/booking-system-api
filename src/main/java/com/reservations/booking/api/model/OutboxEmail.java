@@ -4,7 +4,7 @@ import com.reservations.booking.api.model.enums.OutboxStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "outbox_emails")
@@ -30,8 +30,8 @@ public class OutboxEmail {
 
     private Integer retryCount;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime processedAt;
+    private Instant createdAt;
+    private Instant processedAt;
 
     @Column(columnDefinition = "TEXT")
     private String errorMessage;

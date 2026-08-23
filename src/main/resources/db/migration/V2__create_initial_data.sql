@@ -1,14 +1,14 @@
 -- 1. Password: "password123"
 INSERT INTO users (id, name, email, password, role, created_at)
-VALUES (1, 'Billy Jerson', 'bjersonrr@gmail.com', '$2a$12$O17kdLYuYYCKRSCYufeT6uXv0Y9b6c9nzperkQlMaAMOtY5JY2vyq', 'ROLE_CLIENT', NOW())
+VALUES (1, 'Billy Jerson', 'bjersonrr@gmail.com', '$2a$12$O17kdLYuYYCKRSCYufeT6uXv0Y9b6c9nzperkQlMaAMOtY5JY2vyq', 'ROLE_CLIENT', NOW() AT TIME ZONE 'UTC')
     ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO users (id, name, email, password, role, created_at)
-VALUES (2, 'Dr. Miguel Torres', 'proveedor@example.com', '$2a$12$O17kdLYuYYCKRSCYufeT6uXv0Y9b6c9nzperkQlMaAMOtY5JY2vyq', 'ROLE_PROVIDER', NOW())
+VALUES (2, 'Dr. Miguel Torres', 'proveedor@example.com', '$2a$12$O17kdLYuYYCKRSCYufeT6uXv0Y9b6c9nzperkQlMaAMOtY5JY2vyq', 'ROLE_PROVIDER', NOW() AT TIME ZONE 'UTC')
     ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO users (id, name, email, password, role, created_at)
-VALUES (3, 'Admin Sistema', 'admin@example.com', '$2a$12$O17kdLYuYYCKRSCYufeT6uXv0Y9b6c9nzperkQlMaAMOtY5JY2vyq', 'ROLE_ADMIN', NOW())
+VALUES (3, 'Admin Sistema', 'admin@example.com', '$2a$12$O17kdLYuYYCKRSCYufeT6uXv0Y9b6c9nzperkQlMaAMOtY5JY2vyq', 'ROLE_ADMIN', NOW() AT TIME ZONE 'UTC')
     ON CONFLICT (id) DO NOTHING;
 
 -- 2. Insert services for provider (ID: 2)
@@ -35,3 +35,5 @@ VALUES (2, 'WEDNESDAY', '08:00:00', '18:00:00', 2)
 SELECT setval(pg_get_serial_sequence('users', 'id'), COALESCE(MAX(id), 1)) FROM users;
 SELECT setval(pg_get_serial_sequence('services', 'id'), COALESCE(MAX(id), 1)) FROM services;
 SELECT setval(pg_get_serial_sequence('availabilities', 'id'), COALESCE(MAX(id), 1)) FROM availabilities;
+SELECT setval(pg_get_serial_sequence('appointments', 'id'), COALESCE(MAX(id), 1)) FROM appointments;
+SELECT setval(pg_get_serial_sequence('outbox_emails', 'id'), COALESCE(MAX(id), 1)) FROM outbox_emails;
