@@ -16,10 +16,10 @@ spring:
     locations: classpath:db/migration
 
   rabbitmq:
-    addresses: ${CLOUDAMQP_URL:amqps://mbdfjugg:c3fPzJ7GL4IHFsh9lx4KRBZhPpN6OT3J@leopard.lmq.cloudamqp.com/mbdfjugg}
+    addresses: ${CLOUDAMQP_URL}
 
 resend:
-  api-key: ${RESEND_API_KEY:re_ix15t8de_595Jw3MoeihfsxtFemrBQbqv}
+  api-key: ${RESEND_API_KEY}
 
 jwt:
   secret: ${JWT_SECRET}
